@@ -14,7 +14,6 @@
     <script type="text/javascript" src="file/function.js" charset="utf-8"></script>
     <script type="text/javascript" src="file/love.js" charset="utf-8"></script>
     <style>
-        /* Inline style for the start overlay */
         #start-overlay {
             position: fixed;
             top: 0;
@@ -43,7 +42,6 @@
     </style>
 </head>
 <body>
-    
     <div id="start-overlay">
         <h1>🎁 Click to Open 🎁</h1>
         <p>(Turn up the volume!)</p>
@@ -51,7 +49,6 @@
 
     <div id="main">
         <div id="error"><a href="http://www.google.cn/chrome/intl/zh-CN/landing_chrome.html?hl=zh-CN&brand=CHMI">Chrome</a> (<a href="http://firefox.com.cn/download/">Firefox</a>)</div>
-        
         <audio autoplay="autoplay" height="100" width="100" id="myAudio">
             <source src="aud.mp3" type="audio/mp3" />
             <embed height="100" width="100" src="aud.mp3" />
@@ -60,7 +57,7 @@
         <div id="wrap">
             <div id="text">
                 <div id="code">
-                    <span class="say">Hey Sij 💞</span><br>
+                    <span class="say">Hey you 💞</span><br>
                     <span class="say">Happy Birthday 🎈</span><br>
                     <span class="say">May God bless you 🍀</span><br>
                     <span class="say">And give u many happiness 💕</span><br>
@@ -69,14 +66,13 @@
                     <span class="say">Hope u have a great day today ❤️😘</span><br>
                 </div>
             </div>
-            
             <div id="clock-box">
                 <span id="clock"></span> 
             </div>
             
             <div id="photos">
-                <img src="img.jpg" class="photo-item" style="transform: rotate(-5deg);">
-                <img src="img2.jpg" class="photo-item" style="transform: rotate(5deg); top: 50px; left: 150px;">
+                <img src="img.png" class="photo-item" style="transform: rotate(-5deg);">
+                <img src="img2.png" class="photo-item" style="transform: rotate(5deg); top: 50px; left: 150px;">
             </div>
 
             <canvas id="canvas" width="1100" height="680"></canvas>
@@ -138,45 +134,42 @@
         var foot = tree.footer;
         var hold = 1;
 
-        // 3. Start Overlay & Audio Logic
+        // FIXED SCALING LOGIC
+        var globalScale = 1;
+        function scalePage() {
+            var wrapper = $("#wrap");
+            var winW = $(window).width();
+            var winH = $(window).height();
+            
+            // Calculate scale to fit the screen
+            var scaleX = winW / 1100;
+            var scaleY = winH / 680;
+            globalScale = Math.min(scaleX, scaleY);
+            
+            // This centers the box AND scales it to fit
+            wrapper.css({
+                "transform": "translate(-50%, -50%) scale(" + globalScale + ")"
+            });
+        }
+        $(window).resize(scalePage);
+        scalePage();
+
         $("#start-overlay").click(function(){
             document.getElementById("myAudio").play();
             $(this).fadeOut();
-            // Start the clock when clicked
-            var startDate = new Date(2026, 1, 2); // Set your date: Year, Month (0-11), Day
+            var startDate = new Date(2020, 0, 1);
             setInterval(function() {
                 timeElapse(startDate);
             }, 1000);
         });
 
-        // 4. Mobile Responsiveness: Scale the page to fit screen
-        function scalePage() {
-            var wrapper = $("#wrap");
-            var scaleX = $(window).width() / 1100;
-            var scaleY = $(window).height() / 680;
-            var scale = Math.min(scaleX, scaleY);
-            
-            if (scale < 1) {
-                wrapper.css({
-                    "transform": "scale(" + scale + ")",
-                    "transform-origin": "top left",
-                    "left": ($(window).width() - 1100 * scale) / 2 + "px" // Center horizontally
-                });
-            } else {
-                 wrapper.css({
-                    "transform": "scale(1)",
-                    "left": "50%",
-                    "margin-left": "-550px"
-                });
-            }
-        }
-        $(window).resize(scalePage);
-        scalePage(); // Call once on load
-
+        // FIXED MOUSE LOGIC TO HANDLE SCALING
         canvas.click(function(e) {
             var offset = canvas.offset(), x, y;
-            x = e.pageX - offset.left;
-            y = e.pageY - offset.top;
+            // Adjust coordinates based on scale
+            x = (e.pageX - offset.left) / globalScale;
+            y = (e.pageY - offset.top) / globalScale;
+            
             if (seed.hover(x, y)) {
                 hold = 0; 
                 canvas.unbind("click");
@@ -185,8 +178,8 @@
             }
         }).mousemove(function(e) {
             var offset = canvas.offset(), x, y;
-            x = e.pageX - offset.left;
-            y = e.pageY - offset.top;
+            x = (e.pageX - offset.left) / globalScale;
+            y = (e.pageY - offset.top) / globalScale;
             canvas.toggleClass('hand', seed.hover(x, y));
         });
 
@@ -238,8 +231,6 @@
         var textAnimate = eval(Jscex.compile("async", function () {
             $("#code").show().typewriter();
             $("#clock-box").fadeIn(500);
-            
-            // 5. Fade in photos after text finishes
             $await(Jscex.Async.sleep(5000)); 
             $("#photos").fadeIn(3000);
         }));
